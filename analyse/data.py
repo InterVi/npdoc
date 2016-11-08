@@ -246,6 +246,18 @@ class Elements:
                         None: {None: {name: (el_type, doc)}}
                     }
 
+    def get_module(self, module):
+        """Получить документацию по модулю.
+
+        :param module: имя модуля
+        :return: tuple, (ElementType, (DocType, ()))
+        """
+        if module in self.els:
+            mod = self.els[module]
+            if None in mod and None in mod[None] and None in mod[None][None]:
+                return mod[None][None][None]
+        return {}
+
     def get_global(self, module):
         """Получить глобальные элементы модуля.
 

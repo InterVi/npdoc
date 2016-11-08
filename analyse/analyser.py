@@ -7,14 +7,9 @@ from analyse.enums import *
 class Analyser:
     """Анализтор и документатор кода."""
     def __init__(self, prop):
-        self.classes = Classes()
-        """Контейнер с классами из модуля data."""
-        self.sequence = Sequence()
-        """Последовательность элементов из модуля data."""
-        self.elements = SubElements()
-        """Контейнер с документацией (SubElements) из модуля data."""
-        self.__prop = prop
-        """Словарь с настройками.
+        """
+
+        :param prop: Словарь с настройками.
 
         first -> vfc:
         v - переменные;
@@ -30,6 +25,14 @@ class Analyser:
         depth_vars, depth_func - аналогично depth, для глубины документирования
         переменных и функций / методов.
         """
+        self.classes = Classes()
+        """Контейнер с классами из модуля data."""
+        self.sequence = Sequence()
+        """Последовательность элементов из модуля data."""
+        self.elements = SubElements()
+        """Контейнер с документацией (SubElements) из модуля data."""
+        self.__prop = prop
+        """Словарь с настройками, переданный в конструктор."""
 
     def __get_prop(self, name):
         """Получить опцию из настроек.
