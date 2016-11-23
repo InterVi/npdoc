@@ -4,5 +4,6 @@ __all__ = [
     'core',
     'parser',
     'reader',
-    'writer'
+    'writer',
+    'enums'
 ]

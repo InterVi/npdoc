@@ -7,6 +7,8 @@ PATH = os.path.join(sys.path[0], 'langs')
 """Путь к папке с конфигами."""
 ENCODING = 'UTF-8'
 """Кодировка конфигов (UTF-8)."""
+DEFAULT = 'ru'
+"""Локализация по-умолчанию."""
 
 
 def get_lang(lang):

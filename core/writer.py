@@ -1,6 +1,8 @@
 """Модуль для записи проектов в файлы."""
 import os
 
+__all__ = ['write_rst_project']
+
 
 def write_rst_project(modules, mods, index, path):
     """Запись rst проекта.
@@ -10,12 +12,12 @@ def write_rst_project(modules, mods, index, path):
     :param index: list, index.rst
     :param path: путь к директории для записи
     """
-    if index:
+    if index:  # запись главной страницы (если есть)
         path_file = os.path.join(path, 'index.rst')
         with open(path_file, 'w') as file:
             for line in index:
                 file.write(line)
-    for module in modules:
+    for module in modules:  # запись модулей
         path_file = os.path.join(path, module + '.rst')
         mod = mods[module]
         with open(path_file, 'w') as file:

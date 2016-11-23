@@ -19,6 +19,9 @@ class RSTGenerator:
         f - функции / методы;
         c - классы.
         Определяет последовательность обработки и документирования.
+
+        numbered - нумерация всех пунктов оглавления (bool);
+        hidden - скрыть оглавление (bool)
         :param lang: Языковой словарь.
 
         doc - документация;
@@ -54,17 +57,21 @@ class RSTGenerator:
         result.append('')
         return result
 
-    def _gen_index(self, module=None):
+    def gen_index(self, module=None, names=None):
         """Генерация index.rst, с добавлением имён модулей или классов.
 
         :param module: имя модуля (при None используются имена модулей)
+        :param names: tuple или list с именами файлов rst без расширений,
+        которые будут использоваться вместо имён модулей или классов
         :return: list
         """
         result = []
         if self.__init:
             result += self.__init
             result.append('')
-        if module:
+        if names:
+            result += self._gen_tree(names)
+        elif module:
             result += self._gen_tree(self.sequence.get_classes(module))
         else:
             result += self._gen_tree(self.sequence.get_modules())
@@ -275,5 +282,5 @@ class RSTGenerator:
         mods = {}  # словарь с документацией по ним
         for module in modules:
             mods[module] = self._gen_module(module)
-        index = self._gen_index()
+        index = self.gen_index()
         return modules, mods, index

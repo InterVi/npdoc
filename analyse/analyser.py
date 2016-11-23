@@ -3,6 +3,8 @@ from analyse.data import *
 import analyse.utils as utils
 from analyse.enums import *
 
+__all__ = ['Analyser']
+
 
 class Analyser:
     """Анализтор и документатор кода."""
