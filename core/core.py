@@ -132,7 +132,7 @@ class Generator:
                                          self.__lang
                                          ).gen_index(names=index_names)
                     writer.write_rst_project((), (), index, out)
-            gen(m_names, modules, path, out)  # генерация модуля
+            gen(m_names, modules, path, out)  # генерация модулей
             for pack in p_names:  # рекурсиваня генерация пакетов
                 new_out = os.path.join(out, pack)
                 if not os.path.isdir(new_out):

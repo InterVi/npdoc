@@ -13,30 +13,34 @@ def get_dict(args, lang):
     :return: tuple, (dict, str), словарь с опциями и справка
     """
     parser = ArgumentParser(
-        lang['prog'], lang['usage'], lang['desc'], lang['epilog'],
-        add_help=False
-    )
-    parser.add_argument('-first', default='vfc', type=str, help=lang['first'])
-    parser.add_argument('-depth', default=-1, type=int, help=lang['depth'])
+        lang['HELP']['prog'], lang['HELP']['usage'], lang['HELP']['desc'],
+        lang['HELP']['epilog'], add_help=False)
+    parser.add_argument('-first', default='vfc', type=str,
+                        help=lang['HELP']['first'])
+    parser.add_argument('-depth', default=-1, type=int,
+                        help=lang['HELP']['depth'])
     parser.add_argument('-depth_vars', default=-1, type=int,
-                        help=lang['depth_vars'])
+                        help=lang['HELP']['depth_vars'])
     parser.add_argument('-depth_func', default=-1, type=int,
-                        help=lang['depth_func'])
+                        help=lang['HELP']['depth_func'])
     parser.add_argument('-iface', default='console', type=str,
-                        help=lang['iface'])
-    parser.add_argument('-gen', default='rst', type=str, help=lang['gen'])
+                        help=lang['HELP']['iface'])
+    parser.add_argument('-gen', default='rst', type=str,
+                        help=lang['HELP']['gen'])
     parser.add_argument('-v', '--version', default=False, action='store_true',
-                        help=lang['ver'])
+                        help=lang['HELP']['ver'])
     parser.add_argument('-h', '--help', default=False, action='store_true',
-                        help=lang['help'])
-    parser.add_argument('-path', type=str, help=lang['path'])
-    parser.add_argument('-out', type=str, help=lang['out'])
-    parser.add_argument('-step', type=int, default=-1, help=lang['step'])
-    parser.add_argument('-proc', type=int, default=1, help=lang['proc'])
+                        help=lang['HELP']['help'])
+    parser.add_argument('-path', type=str, help=lang['HELP']['path'])
+    parser.add_argument('-out', type=str, help=lang['HELP']['out'])
+    parser.add_argument('-step', type=int, default=-1,
+                        help=lang['HELP']['step'])
+    parser.add_argument('-proc', type=int, default=1,
+                        help=lang['HELP']['proc'])
     parser.add_argument('-numbered', type=bool, default=False,
-                        action='store_true', help=lang['numbered'])
+                        action='store_true', help=lang['HELP']['numbered'])
     parser.add_argument('-hidden', type=bool, default=False,
-                        action='store_true', help=lang['hidden'])
+                        action='store_true', help=lang['HELP']['hidden'])
     return vars(parser.parse_args(args)), parser.format_help()
 
 

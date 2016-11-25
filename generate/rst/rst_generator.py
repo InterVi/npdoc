@@ -89,9 +89,9 @@ class RSTGenerator:
             return None
         result = [e_name, '+' * len(e_name), '']
         if element[1][0] == DocType.doc:  # документация
-            result += ['*' + self.__lang['doc'] + '*', '']
+            result += ['*' + self.__lang['RST_GENERATOR']['doc'] + '*', '']
         else:  # комментарий
-            result += ['*' + self.__lang['com'] + '*', '']
+            result += ['*' + self.__lang['RST_GENERATOR']['com'] + '*', '']
         for doc_str in element[1][1]:
             result.append(doc_str)
         result.append('')
@@ -190,8 +190,8 @@ class RSTGenerator:
             sp = sp[:-2]
             result = [
                 name, '-' * len(name), '',
-                '**' + self.__lang['sup'] + '**:', '', sp, '',
-                '**' + self.__lang['sub'] + '**:', '', sb, ''
+                '**' + self.__lang['RST_GENERATOR']['sup'] + '**:', '', sp, '',
+                '**' + self.__lang['RST_GENERATOR']['sub'] + '**:', '', sb, ''
             ]
             content = self.elements.get_self(module, name)
             sequence = self.sequence.get_self_elements(module, name)
