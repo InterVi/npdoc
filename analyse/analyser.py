@@ -286,7 +286,7 @@ class Analyser:
                         if ft == 'f':  # раскрытие функций
                             if not element[1]:
                                 continue
-                            func_val = self._doc_elements(lines, module, False,
+                            func_val = self._doc_elements(lines, name, False,
                                                           cls, this_hie,
                                                           element[1],
                                                           indent, first, var,

@@ -14,7 +14,8 @@ def get_file(path):
         return []
     result = []
     with open(path) as file:
-        result.append(file.readline())
+        for line in file:
+            result.append(line)
     return result
 
 

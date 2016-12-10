@@ -12,5 +12,8 @@ class IfaceConsole(IfaceTemplate):
     def print_help(self):
         print(self._help)
 
+    def print_version(self):
+        print('pre alpha')
+
     def broken_args(self):
         self.print_help()

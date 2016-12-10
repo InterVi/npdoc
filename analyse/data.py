@@ -238,12 +238,12 @@ class Elements:
                     self.els[module] = {cls: {name: (el_type, doc)}}
             else:  # пополнение модуля
                 if sub_el:  # пополнение элементов элемента модуля
-                    self.els[module][None] = {
-                        None: {sub_el: {name: {None: (el_type, doc)}}}
+                    self.els[module] = {
+                        None: {None: {sub_el: {name: {None: (el_type, doc)}}}}
                     }
                 else:  # пополнение элементов модуля
-                    self.els[module][None] = {
-                        None: {None: {name: (el_type, doc)}}
+                    self.els[module] = {
+                        None: {None: {None: {name: (el_type, doc)}}}
                     }
 
     def get_module(self, module):
@@ -254,9 +254,10 @@ class Elements:
         """
         if module in self.els:
             mod = self.els[module]
-            if None in mod and None in mod[None] and None in mod[None][None]:
-                return mod[None][None][None]
-        return {}
+            if None in mod and None in mod[None] and None in mod[None][None]\
+                    and None in mod[None][None][None]:
+                return mod[None][None][None][None]
+        return ()
 
     def get_global(self, module):
         """Получить глобальные элементы модуля.
@@ -371,14 +372,20 @@ class SubElements(Elements):
             :param pos: позиция старта в sub_el
             :param se_dict: словарь (ссылающийся на self.els)
             """
-            while pos < len(sub_el):
-                if len(sub_el) < pos + 2:
-                    se_dict[sub_el[pos]] = {
-                        sub_el[pos + 2]: sub_el[pos + 2]
-                    }
-                    pos += 2
+            def add_in(pos_, se_dict_):
+                if pos_ >= len(sub_el):
+                    return
+                se_dict_[sub_el[pos_]] = {}
+                pos_ += 1
+                if pos_ >= len(sub_el):
+                    se_dict_[sub_el[pos_-1]] = {name: {None: (el_type, doc)}}
                 else:
-                    se_dict[sub_el][pos] = {name: {None: (el_type, doc)}}
+                    add_in(pos_, se_dict_[sub_el[pos_-1]])
+
+            while pos < len(sub_el):
+                if sub_el[pos] not in se_dict:
+                    add_in(pos, se_dict)
+                pos += 1
 
         def get_pos(se_dict):
             """Получить последнюю позицию в словаре,
@@ -397,9 +404,9 @@ class SubElements(Elements):
             return pos, se_dict
 
         if not sub_el:
-            Elements.add(name, module, el_type, cls, None, doc)
+            Elements.add(self, name, module, el_type, cls, None, doc)
         elif len(sub_el) == 1:
-            Elements.add(name, module, el_type, cls, sub_el[0], doc)
+            Elements.add(self, name, module, el_type, cls, sub_el[0], doc)
         else:
             if module in self.els:
                 mod = self.els[module]
@@ -607,7 +614,7 @@ class Sequence:
         if module in self.mods:
             mod = self.mods[module]
             if None in mod and None in mod[None]:
-                return mod[None][None]
+                return mod[None][None][0]
         return []
 
     def get_global_elements(self, module):
@@ -618,11 +625,8 @@ class Sequence:
         """
         if module in self.mods:
             mod = self.mods[module]
-            if None in mod:
-                result = mod[None].copy()
-                if None in result:
-                    del result[None]
-                return result
+            if None in mod and None in mod[None]:
+                return mod[None][None][1]
         return []
 
     @staticmethod

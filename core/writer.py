@@ -17,9 +17,11 @@ def write_rst_project(modules, mods, index, path):
         with open(path_file, 'w') as file:
             for line in index:
                 file.write(line)
+                file.write('\n')
     for module in modules:  # запись модулей
         path_file = os.path.join(path, module + '.rst')
         mod = mods[module]
         with open(path_file, 'w') as file:
             for line in mod:
                 file.write(line)
+                file.write('\n')

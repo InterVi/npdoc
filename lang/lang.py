@@ -3,7 +3,7 @@ import os
 import sys
 from configparser import ConfigParser
 
-PATH = os.path.join(sys.path[0], 'langs')
+PATH = os.path.join(sys.path[0], 'lang', 'langs')
 """Путь к папке с конфигами."""
 ENCODING = 'UTF-8'
 """Кодировка конфигов (UTF-8)."""

@@ -50,7 +50,7 @@ def __for(func, lines, indent=-1):
     :return: list, [(имя, индекс), ...]
     """
     result = []
-    names = []
+    elements = []
     i = 0
     doc = IsDoc()
     for line in lines:
@@ -66,11 +66,12 @@ def __for(func, lines, indent=-1):
             elif fs != indent:  # пропуск вложенных блоков
                 i += 1
                 continue
-        name = func(line)
-        if name and name not in names:
+        element = func(line)
+        if element and element not in elements:
             # вернулось значение - добавляем в список
-            result.append((name, i))
-            names.append(name)
+            result.append((element, i))
+            elements.append(element)
+        i += 1
     return result
 
 
@@ -82,11 +83,10 @@ def get_classes(lines, start=0):
     чтобы обрабатывать только нужные блоки
     :return: list, [(имя(супер-классы), индекс), (имя, индекс), ...]
     """
-    end = start + 5
-
     def func(line):  # поиск в строке определения класса
-        if line[start:end] == 'class' and ':' in line:
-            return line[end:line.index(':')].strip()
+        line = line.strip()
+        if line[:5] == 'class' and ':' in line:
+            return line[6:line.index(':')].strip()
 
     return __for(func, lines, start)
 
@@ -106,14 +106,14 @@ def __clean(line, ch):
         a = line.find('"')
         b = line.find('\'')
         if a == -1:
-            c = b
+            c = '\''
         elif b == -1:
-            c = a
+            c = '"'
         else:
             if a < b:
-                c = a
+                c = '"'
             else:
-                c = b
+                c = '\''
         return c
 
     q = line.find(get_ch())
@@ -134,6 +134,23 @@ def __clean(line, ch):
     return line
 
 
+def __trim_if(line):
+    """Обрезка условий.
+
+    :param line: строка
+    :return: часть после двоеточия, очищенная от комментария (если есть)
+    """
+    # line = line.strip()
+    if line[:2] == 'if':  # если PEP8 не соблюдается
+        if '"' in line or '\'' in line:  # обрезка условий
+            line = __clean(line, ':')[1:].strip()
+        else:
+            line = line[line.index(':') + 1:].strip()
+        if '#' in line:  # обрезка коммента
+            line = line[:line.index('#')].strip()
+    return line
+
+
 def get_init_elements(init):
     """Получить элементы класса, определённые в __init__.
 
@@ -145,12 +162,7 @@ def get_init_elements(init):
         if line[:4] == 'self' and '=' in line:
             return line[5:line.index('=')].strip()
         elif line[:2] == 'if':  # если PEP8 не соблюдается
-            if '"' in line or '\'' in line:  # обрезка условий
-                line = __clean(line, ':')[1:].strip()
-            else:
-                line = line[line.index(':')+1:].strip()
-            if '#' in line:  # обрезка коммента
-                line = line[:line.index('#')].strip()
+            line = __trim_if(line)
             if line[:4] == 'self' and '=' in line:  # проверка середины
                 return line[5:line.index('=')].strip()
 
@@ -166,9 +178,13 @@ def get_elements(lines, indent=0):
     :return: list, [(имя, индекс), ...]
     """
     def func(line):
+        line = line.strip()
+        if line[:2] == 'if':
+            line = __trim_if(line)
         if '=' in line:  # поиск присвоения в строке
-            return line.split('=')[0].strip()
-
+            first = line.split('=')[0].strip()
+            if first.find('.') == -1 and first.find('[') == -1:
+                return first
     return __for(func, lines, indent)
 
 
@@ -180,11 +196,10 @@ def get_functions(lines, start=0):
     чтобы обрабатывать только нужные блоки
     :return: list, [(имя(параметры), индекс), ...]
     """
-    end = start + 3
-
     def func(line):  # поиск в строке определения функции
-        if line[start:end] == 'def' and ':' in line:
-            return line[end:line.index(':')].strip()
+        line = line.strip()
+        if line[:3] == 'def' and ':' in line:
+            return line[4:line.index(':')].strip()
 
     return __for(func, lines, start)
 
@@ -203,12 +218,14 @@ def get_docs(lines, elements):
         add = []
         while i < len(lines):
             line = lines[i].strip()
-            if line[0] == '#' or (not doc.doc and not line):
+            if (not doc.doc and not line) or (line and line[0] == '#'):
                 # пропуск комментов и пустых строк ДО
                 i += 1
                 continue
             if doc.is_doc(line):
                 if not doc.doc:  # это однострочная документация
+                    if line == '"""':  # строка состоит из закрывающих кавычек
+                        break
                     line = line[line.index('"""')+3:]
                     line = line[:line.index('"""')]
                     add.append(line)
@@ -225,11 +242,13 @@ def get_docs(lines, elements):
                 break
             i += 1
         if add:
-            # чистка последнего элемента от кавычек
-            last = len(add)-1
-            add[last] = add[last][:add[last].index('"""')]
-            if not add[last]:
-                del add[last]
+            if len(add) > 1:  # чистка последнего элемента от кавычек
+                last = len(add)-1
+                end = add[last].find('"""')
+                if end != -1:
+                    add[last] = add[last][:end]
+                if not add[last]:
+                    del add[last]
             result[el[0]] = add  # сохранение результата
     return result
 
@@ -287,7 +306,7 @@ def get_comments(lines, elements):
     result = {}
     for el in elements:
         add = []
-        comment = get_one(el[1])  # однострочный коммент
+        comment = get_one(lines[el[1]])  # однострочный коммент
         if comment:
             add.append(comment)
         comments = get(el[1]+1)  # многострочный коммент ПОСЛЕ
@@ -313,26 +332,31 @@ def get_module_docs_or_comments(lines, com=False):
     doc = IsDoc()
     for line in lines:
         line = line.strip()
-        if (not line and not doc.doc) or line[:6] == 'import' or (
-                    line[:4] == 'from'):
+        if not doc.doc and (not line or (line[:6] == 'import'
+                                         or line[:4] == 'from')):
             # пропуск импортов и пустых строк ДО
             continue
-        elif line[0] == '#':  # сохранение комментариев
+        elif line and line[0] == '#':  # сохранение комментариев
             if com:
-                result.append(line[1:])
+                result.append(line[1:].strip())
                 continue
+        elif com:  # выход из цикла при завершении комментариев
+            break
         if not com and doc.is_doc(line):  # сохранение документации
             result.append(line)
             if not doc.doc:  # документация однострочная - прерывание цикла
                 break
-        else:  # выход из цикла при завершении документации или комментов
+        else:  # выход из цикла при завершении документации
             # документация должна быть до мешанины кода
             # или после обычных импортов, иначе не выявится
             break
     if result and not com:  # обрезание кавычек
         if len(result) == 1:  # у однострочной документации
-            result[0] = result[0][result[0].index('"""') + 3:]
-            result[0] = result[0][:result[0].index('"""')]
+            if result[0] == '"""':
+                del result[0]
+            else:
+                result[0] = result[0][result[0].index('"""') + 3:]
+                result[0] = result[0][:result[0].index('"""')]
         else:  # у многострочной
             result[0] = result[0][result[0].index('"""') + 3:]
             if not result[0]:
@@ -353,10 +377,16 @@ def get_block(lines, index, indent=4):
     :return: list, блок кода с данным отступом
     """
     i = index+1
-    for line in lines:
-        if get_first_spaces(line) < indent:
+    while i < len(lines):  # анализ с заданной позиции
+        line = lines[i]
+        if not line or line.isspace():  # пропуск пустых строк
+            i += 1
+            continue
+        if get_first_spaces(line) < indent:  # проверка отступа
             break
         i += 1
+    if i == index+1:  # иначе в блоке будет первая строка
+        return []
     return lines[index:i]
 
 
@@ -370,6 +400,7 @@ def get_indent(lines):
     for line in lines:
         if line[:5] == 'class' or line[:3] == 'def':  # поиск блока
             block = True
+            continue
         if block and line and not line.isspace() and not (
                     line.strip()[0] == '#'):
             # определение отступа в блоке

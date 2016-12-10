@@ -1,9 +1,7 @@
 """Модуль для работы с интерфейсами."""
 from core.core import Generator
-from iface.enums import IfaceType
-from iface.console.console import IfaceConsole
 
-__all__ = ['IfaceTemplate', 'get_iface']
+__all__ = ['IfaceTemplate']
 
 
 class IfaceTemplate:
@@ -28,16 +26,10 @@ class IfaceTemplate:
         """Вывод справки."""
         pass
 
+    def print_version(self):
+        """Вывод версии."""
+        pass
+
     def broken_args(self):
         """Вывод сообщения о неверных аргументах запуска."""
         pass
-
-
-def get_iface(type_):
-    """Получить нужный интерфейс.
-
-    :param type_: IfaceType
-    :return: интерфейс, наследующий IfaceTemplate
-    """
-    if type_ == IfaceType.console:
-        return IfaceConsole

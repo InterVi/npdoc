@@ -27,21 +27,22 @@ def get_dict(args, lang):
                         help=lang['HELP']['iface'])
     parser.add_argument('-gen', default='rst', type=str,
                         help=lang['HELP']['gen'])
-    parser.add_argument('-v', '--version', default=False, action='store_true',
-                        help=lang['HELP']['ver'])
-    parser.add_argument('-h', '--help', default=False, action='store_true',
-                        help=lang['HELP']['help'])
+    parser.add_argument('-v', '--version', default=False, action='store_false',
+                        dest='version', help=lang['HELP']['ver'])
+    parser.add_argument('-h', '--help', default=False, action='store_false',
+                        dest='help', help=lang['HELP']['help'])
     parser.add_argument('-path', type=str, help=lang['HELP']['path'])
     parser.add_argument('-out', type=str, help=lang['HELP']['out'])
     parser.add_argument('-step', type=int, default=-1,
                         help=lang['HELP']['step'])
     parser.add_argument('-proc', type=int, default=1,
                         help=lang['HELP']['proc'])
-    parser.add_argument('-numbered', type=bool, default=False,
-                        action='store_true', help=lang['HELP']['numbered'])
-    parser.add_argument('-hidden', type=bool, default=False,
-                        action='store_true', help=lang['HELP']['hidden'])
-    return vars(parser.parse_args(args)), parser.format_help()
+    parser.add_argument('-numbered', default=False, action='store_false',
+                        help=lang['HELP']['numbered'])
+    parser.add_argument('-hidden', default=False, action='store_false',
+                        help=lang['HELP']['hidden'])
+    parser.add_argument('-lang', type=str, help=lang['HELP']['lang'])
+    return vars(parser.parse_known_args(args)[0]), parser.format_help()
 
 
 def get_lang(args):
@@ -52,7 +53,7 @@ def get_lang(args):
     """
     parser = ArgumentParser(add_help=False)
     parser.add_argument('-lang', type=str)
-    result = parser.parse_args(args)
+    result, unknown = parser.parse_known_args(args)
     langs = locale.get_langs()
     if result.lang:
         if result.lang in langs:  # если такая локализация есть
@@ -71,8 +72,8 @@ def is_correct(kwargs):
     """
     if not kwargs:
         return False
-    elif 'path' not in kwargs:
+    elif not kwargs['path']:
         return False
-    elif 'out' not in kwargs:
+    elif not kwargs['out']:
         return False
     return True

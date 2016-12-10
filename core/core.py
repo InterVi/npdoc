@@ -59,7 +59,7 @@ class Generator:
         """
         if self.__prop['proc'] == 1:  # 1 процесс
             if self.__prop['step'] == -1:  # шаг не задан
-                return [names]
+                return [(names, modules, path, out)]
         split_names = []  # разделённые имена
         if self.__prop['step'] == -1:  # равномерное разделение на процессы
             part = round(len(names) / self.__prop['proc'])
@@ -83,21 +83,25 @@ class Generator:
         i = 0
         while i < len(split_names):
             result.append((split_names[i], split_modules[i], path, out))
+            i += 1
         return result
 
-    def _proc(self, names, modules, out):
+    def _proc(self, opt):
         """Метод для запуска в процессе. Создание и запись документации.
 
-        :param names: list, имена модулей
-        :param modules: dict, словарь с путями к модулям
-        :param out: str, путь к директории записи документации
+        :param opt: tuple, (list, dict, str, str), (names, modules, path, out),
+        - names: list, имена модулей;
+        - modules: dict, словарь с путями к модулям;
+        - out: str, путь к директории записи документации.
         """
+        names, modules, path, out = opt
         cont = reader.get_names(modules)
         cont_list = []
         for name in names:  # выравнивание последовательности
             cont_list.append(cont[name])
         doc_type, project = self._get_doc(cont_list, names)
-        if doc_type == DocType.rst:  # запись rst проекта
+        # запись
+        if doc_type == DocType.rst:  # rst проект
             writer.write_rst_project(project[0], project[1], None, out)
 
     def start(self):
@@ -124,7 +128,7 @@ class Generator:
             p_names, packages = reader.get_packages(path)
             m_names, modules = reader.get_modules(path, True)
             if root:  # если это корень, то сгенерировать index.rst
-                if self.__prop['gen'] == 'rst':
+                if self.__prop['gen'] == 'rst':  # rst проект
                     index_names = m_names.copy()
                     for pack in p_names:
                         index_names.append(pack + '/*')
