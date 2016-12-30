@@ -105,13 +105,15 @@ class Generator:
             project = doc[1]
         else:
             return
-        # doc_type, project = self._get_doc(cont_list, names)
         # запись
         if doc_type == DocType.rst:  # rst проект
             writer.write_rst_project(project[0], project[1], None, out)
 
     def start(self):
-        """Создание и запись документации."""
+        """Создание и запись документации.
+
+        :return: True в случае успеха
+        """
         def gen(names, modules, path, out):
             """Запуск создания и записи документации в процессах.
 
@@ -148,5 +150,12 @@ class Generator:
                 if not os.path.isdir(new_out):
                     os.mkdir(new_out)
                 gen_package(packages[pack], new_out)
-
-        gen_package(self.__prop['path'], self.__prop['out'], True)
+        path_ = self.__prop['path']
+        if os.path.isdir(path_):  # если это директория (пакет)
+            gen_package(path_, self.__prop['out'], True)
+            return True
+        elif os.path.isfile(path_):  # если это файл (модуль)
+            name = os.path.basename(path_)[:path_.index('.')]
+            gen([name], {name: path_}, path_, self.__prop['out'])
+            return True
+        return False

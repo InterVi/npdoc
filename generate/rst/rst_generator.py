@@ -22,7 +22,10 @@ class RSTGenerator:
 
         depth - глубина документирования (int);
         numbered - нумерация всех пунктов оглавления (bool);
-        hidden - скрыть оглавление (bool)
+        hidden - скрыть оглавление (bool).
+
+        nohie - не выводить иерархию классов;
+        notype - не выводить тип информации (документация или комментарий).
         :param lang: Языковой словарь.
 
         doc - документация;
@@ -92,10 +95,13 @@ class RSTGenerator:
             return None
         result = [e_name, '+' * len(e_name), '']
         if element[1][1]:  # если содержимое не пустое (иначе метки не нужны)
-            if element[1][0] == DocType.doc:  # документация
-                result += ['*' + self.__lang['RST_GENERATOR']['doc'] + '*', '']
-            else:  # комментарий
-                result += ['*' + self.__lang['RST_GENERATOR']['com'] + '*', '']
+            if not self.__prop['notype']:
+                if element[1][0] == DocType.doc:  # документация
+                    result += ['*' + self.__lang['RST_GENERATOR']['doc'] + '*',
+                               '']
+                else:  # комментарий
+                    result += ['*' + self.__lang['RST_GENERATOR']['com'] + '*',
+                               '']
             for doc_str in element[1][1]:
                 result.append(doc_str)
             result.append('')
@@ -188,24 +194,27 @@ class RSTGenerator:
             content = self.elements.get_self_local(module, name, els)
             sequence = self.sequence.get_self_local_elements(module, name, els)
         else:  # если это нормальный класс
-            sub = self.classes.get_sub_names(name, module)
-            sup = self.classes.get_super_names(name, module)
-            # перечисление супер и суб классов
-            sb = ''
-            for s in sub:
-                s += s[0] + ' (' + s[1] + '), '
-            sb = sb[:-2]
-            sp = ''
-            for s in sup:
-                s += s[0] + ' (' + s[1] + '), '
-            sp = sp[:-2]
             result = [name, '-' * len(name), '']
-            if sup:  # если есть супер-классы
-                result += ['**' + self.__lang['RST_GENERATOR']['sup'] + '**:',
-                           '', sp, '']
-            if sub:  # если есть суб-классы
-                result += ['**' + self.__lang['RST_GENERATOR']['sub'] + '**:',
-                           '', sb, '']
+            if not self.__prop['nohie']:
+                sub = self.classes.get_sub_names(name, module)
+                sup = self.classes.get_super_names(name, module)
+                # перечисление супер и суб классов
+                sb = ''
+                for s in sub:
+                    s += s[0] + ' (' + s[1] + '), '
+                sb = sb[:-2]
+                sp = ''
+                for s in sup:
+                    s += s[0] + ' (' + s[1] + '), '
+                sp = sp[:-2]
+                if sup:  # если есть супер-классы
+                    result +=\
+                        ['**' + self.__lang['RST_GENERATOR']['sup'] + '**:',
+                         '', sp, '']
+                if sub:  # если есть суб-классы
+                    result +=\
+                        ['**' + self.__lang['RST_GENERATOR']['sub'] + '**:',
+                         '', sb, '']
             content = self.elements.get_self(module, name)
             sequence = self.sequence.get_self_elements(module, name)
         if doc:  # вставка описания класса
