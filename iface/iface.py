@@ -1,5 +1,4 @@
 """Модуль для работы с интерфейсами."""
-from core.core import Generator
 
 __all__ = ['IfaceTemplate']
 
@@ -16,7 +15,6 @@ class IfaceTemplate:
         self._prop = prop
         self._lang = lang
         self._help = help_str
-        self.generator = Generator(prop, lang)
 
     def start(self):
         """Запуск интерфейса."""
