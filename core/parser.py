@@ -24,9 +24,9 @@ def get_dict(args, lang):
     parser.add_argument('-depth_func', default=-1, type=int,
                         help=lang['HELP']['depth_func'])
     parser.add_argument('-iface', default='console', type=str,
-                        help=lang['HELP']['iface'])
+                        help=lang['HELP']['iface'], choices=['console'])
     parser.add_argument('-gen', default='rst', type=str,
-                        help=lang['HELP']['gen'])
+                        help=lang['HELP']['gen'], choices=['rst'])
     parser.add_argument('-v', '--version', default=False, action='store_false',
                         dest='version', help=lang['HELP']['ver'])
     parser.add_argument('-h', '--help', default=False, action='store_false',

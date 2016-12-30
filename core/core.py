@@ -99,7 +99,13 @@ class Generator:
         cont_list = []
         for name in names:  # выравнивание последовательности
             cont_list.append(cont[name])
-        doc_type, project = self._get_doc(cont_list, names)
+        doc = self._get_doc(cont_list, names)
+        if doc:
+            doc_type = doc[0]
+            project = doc[1]
+        else:
+            return
+        # doc_type, project = self._get_doc(cont_list, names)
         # запись
         if doc_type == DocType.rst:  # rst проект
             writer.write_rst_project(project[0], project[1], None, out)

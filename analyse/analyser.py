@@ -103,7 +103,8 @@ class Analyser:
                     com = com.update(utils.get_comments(block, init))
         for element in elements:  # дкументирование элементов
             name = element[0]
-            if '(' in name:  # отсечение лишнего (для последовательности)
+            if is_cls and '(' in name:
+                # отсечение лишнего (для последовательности)
                 name = name[:name.index('(')].strip()
             self.sequence.add(module, cls, els + (name,))
             doc = ()

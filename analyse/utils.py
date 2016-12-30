@@ -179,8 +179,10 @@ def get_elements(lines, indent=0):
     """
     def func(line):
         line = line.strip()
-        if line[:2] == 'if':
+        if line[:2] == 'if':  # обрезка условий
             line = __trim_if(line)
+        elif line[:3] == 'def':  # пропуск функий
+            return
         if '=' in line:  # поиск присвоения в строке
             first = line.split('=')[0].strip()
             if first.find('.') == -1 and first.find('[') == -1:

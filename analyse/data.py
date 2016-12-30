@@ -41,9 +41,10 @@ class Classes:
         """
         if module:
             result = []
-            for cls in self.cls[name][0]:
-                if cls in self.names[module]:
-                    result.append(cls)
+            if name in self.cls:
+                for cls in self.cls[name][0]:
+                    if cls[0] in self.names[module]:
+                        result.append(cls)
             return tuple(result)
         else:
             return self.cls[name][0]
@@ -58,7 +59,7 @@ class Classes:
         result = []
         for cls in self.cls:
             val = self.cls[cls]
-            if name in val[0]:
+            if val[0] and name in val[0][0]:
                 if module:
                     if module == val[1]:
                         result.append(cls)
@@ -510,7 +511,12 @@ class Sequence:
                     }
                 }
                 класс: {
-                    None: [элемент1, элемент2, элемент3, ...]
+                    None: [
+                        элемент1, элемент2, элемент3, ...
+                        None: [
+                            [], [имя_элемента1, имя_элемента2, ...]
+                        ]
+                    ]
                     элемент: {
                         None: [суб-элемент1, суб-элемент2, суб-элемент3, ...]
                         суб-элемент: ...
@@ -641,8 +647,10 @@ class Sequence:
         for e in el:
             if e in se_dict:
                 se_dict = se_dict[e]
+            else:  # искомого элемента в иерархии нет
+                return []
         if None in se_dict:
-            return se_dict[None]
+            return se_dict[None][1]
         return []
 
     def get_global_local_elements(self, module, el=()):
@@ -672,7 +680,7 @@ class Sequence:
             if cls in mod:
                 se = mod[cls]
                 if None in se:
-                    return se[None]
+                    return se[None][1]
         return []
 
     def get_self_local_elements(self, module, cls, el=()):
