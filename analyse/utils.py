@@ -15,12 +15,10 @@ class IsDoc:
         """
         count = line.count('"""')
         if count == 1:  # одни кавычки - значит документация многострочна
-            if self.doc:  # это закрывающие кавычки
-                self.doc = False
-            else:  # открывающие кавычки
-                self.doc = True
+            self.doc = not self.doc
             return True
         elif count > 1:  # документация многострочна (> 1 из-за комментов)
+            self.doc = False
             return True
         return self.doc
 
@@ -85,7 +83,7 @@ def get_classes(lines, start=0):
     """
     def func(line):  # поиск в строке определения класса
         line = line.strip()
-        if line[:5] == 'class' and ':' in line:
+        if line[:6] == 'class ' and ':' in line:
             return line[6:line.index(':')].strip()
 
     return __for(func, lines, start)
@@ -141,11 +139,13 @@ def __trim_if(line):
     :return: часть после двоеточия, очищенная от комментария (если есть)
     """
     # line = line.strip()
-    if line[:2] == 'if':  # если PEP8 не соблюдается
+    if line[:3] == 'if ':  # если PEP8 не соблюдается
         if '"' in line or '\'' in line:  # обрезка условий
-            line = __clean(line, ':')[1:].strip()
+            if ':' in line:
+                line = __clean(line, ':')[1:].strip()
         else:
-            line = line[line.index(':') + 1:].strip()
+            if ':' in line:
+                line = line[line.index(':') + 1:].strip()
         if '#' in line:  # обрезка коммента
             line = line[:line.index('#')].strip()
     return line
@@ -159,11 +159,11 @@ def get_init_elements(init):
     """
     def func(line):  # поиск присвоения в строке
         line = line.strip()
-        if line[:4] == 'self' and '=' in line:
+        if line[:5] == 'self.' and '=' in line:
             return line[5:line.index('=')].strip()
-        elif line[:2] == 'if':  # если PEP8 не соблюдается
+        elif line[:3] == 'if ':  # если PEP8 не соблюдается
             line = __trim_if(line)
-            if line[:4] == 'self' and '=' in line:  # проверка середины
+            if line[:5] == 'self.' and '=' in line:  # проверка середины
                 return line[5:line.index('=')].strip()
 
     return __for(func, init)
@@ -179,9 +179,9 @@ def get_elements(lines, indent=0):
     """
     def func(line):
         line = line.strip()
-        if line[:2] == 'if':  # обрезка условий
+        if line[:3] == 'if ':  # обрезка условий
             line = __trim_if(line)
-        elif line[:3] == 'def':  # пропуск функий
+        elif line[:4] == 'def ':  # пропуск функий
             return
         if '=' in line:  # поиск присвоения в строке
             first = line.split('=')[0].strip()
@@ -200,7 +200,7 @@ def get_functions(lines, start=0):
     """
     def func(line):  # поиск в строке определения функции
         line = line.strip()
-        if line[:3] == 'def' and ':' in line:
+        if line[:4] == 'def ' and ':' in line:
             return line[4:line.index(':')].strip()
 
     return __for(func, lines, start)
@@ -399,8 +399,11 @@ def get_indent(lines):
     :return: int
     """
     block = False
+    doc = IsDoc()
     for line in lines:
-        if line[:5] == 'class' or line[:3] == 'def':  # поиск блока
+        if not doc.is_doc(line) and\
+                (line[:6] == 'class ' or line[:4] == 'def ') and ':' in line:
+            # поиск блока
             block = True
             continue
         if block and line and not line.isspace() and not (
