@@ -13,11 +13,15 @@ class IsDoc:
         :param line: строка
         :return: bool, True если истина
         """
-        count = line.count('"""')
+        count = 0
+        if line.strip()[:3] == '"""':
+            count += 1
+        if line.strip()[-3:] == '"""':
+            count += 1
         if count == 1:  # одни кавычки - значит документация многострочна
             self.doc = not self.doc
             return True
-        elif count > 1:  # документация многострочна (> 1 из-за комментов)
+        elif count == 2:  # документация однострочная
             self.doc = False
             return True
         return self.doc
@@ -118,17 +122,13 @@ def __clean(line, ch):
     i = 0  # кол-во найденных кавычек
     while q != -1:
         i += 1
-        if i != 1 and i % 2 != 0:
-            # не чётное кол-во - значит пары кавычек отрезаны
-            # и найдена следующая открывающая кавычка
-            sh = line.find(ch)
-            if sh != -1 and sh < q:
-                # регирование на символ вне кавычек
-                # поэтому целый алгоритм пришлось писать :(
-                line = line[sh:]
-                break
         line = line[q + 1:]  # отрезание кавычки
         q = line.find(get_ch())
+    sh = line.find(ch)
+    if sh != -1 and sh > q:
+        # регирование на символ вне кавычек
+        # поэтому целый алгоритм пришлось писать :(
+        line = line[sh:]
     return line
 
 
@@ -139,7 +139,7 @@ def __trim_if(line):
     :return: часть после двоеточия, очищенная от комментария (если есть)
     """
     # line = line.strip()
-    if line[:3] == 'if ':  # если PEP8 не соблюдается
+    if line[:3] == 'if ' or line[:5] == 'elif ':  # если PEP8 не соблюдается
         if '"' in line or '\'' in line:  # обрезка условий
             if ':' in line:
                 line = __clean(line, ':')[1:].strip()
@@ -161,7 +161,8 @@ def get_init_elements(init):
         line = line.strip()
         if line[:5] == 'self.' and '=' in line:
             return line[5:line.index('=')].strip()
-        elif line[:3] == 'if ':  # если PEP8 не соблюдается
+        elif line[:3] == 'if ' or line[:5] == 'elif ':
+            # если PEP8 не соблюдается
             line = __trim_if(line)
             if line[:5] == 'self.' and '=' in line:  # проверка середины
                 return line[5:line.index('=')].strip()
@@ -179,14 +180,20 @@ def get_elements(lines, indent=0):
     """
     def func(line):
         line = line.strip()
-        if line[:3] == 'if ':  # обрезка условий
+        if line[:3] == 'if ' or line[:5] == 'elif ':  # обрезка условий
             line = __trim_if(line)
-        elif line[:4] == 'def ':  # пропуск функий
+        elif line[:4] == 'def ' or line[:6] == 'while ':
             return
         if '=' in line:  # поиск присвоения в строке
+            c = line[line.index('=')-1]
+            if c == '+' or c == '-':  # пропуск изменений переменных
+                return
             first = line.split('=')[0].strip()
-            if first.find('.') == -1 and first.find('[') == -1:
-                return first
+            chars = '.,+[]()'  # символы, которых быть не должно
+            for ch in chars:
+                if first.find(ch) != -1:
+                    return
+            return first
     return __for(func, lines, indent)
 
 
