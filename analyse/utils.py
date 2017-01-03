@@ -396,7 +396,7 @@ def get_block(lines, index, indent=4):
         i += 1
     if i == index+1:  # иначе в блоке будет первая строка
         return []
-    return lines[index:i]
+    return lines[index+1:i]
 
 
 def get_indent(lines):

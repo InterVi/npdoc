@@ -109,10 +109,10 @@ class Analyser:
             self.sequence.add(module, cls, els + (name,))
             doc = ()
             doc_type = None
-            if element[0] in docs:  # поиск документации
+            if docs and element[0] in docs:  # поиск документации
                 doc = tuple(docs[element[0]])
                 doc_type = DocType.doc
-            elif element[0] in com:  # или комментов
+            elif com and element[0] in com:  # или комментов
                 doc = tuple(com[element[0]])
                 doc_type = DocType.com
             self.elements.add(element[0], module, el_type, cls, els,
@@ -352,11 +352,11 @@ class Analyser:
                     for fe in first:  # опять последовательность
                         # документирование содержимого классов
                         if fe == 'v':  # переменные
-                            self._elements_or_func_doc(name, code, ind, False,
+                            self._elements_or_func_doc(name, code, ind, True,
                                                        c_name)
                         elif fe == 'f':  # методы
                             functions = self._elements_or_func_doc(name, code,
-                                                                   ind, False,
+                                                                   ind, True,
                                                                    c_name,
                                                                    func=True)
                             de = self._doc_elements(code, name, True, c_name,

@@ -198,6 +198,11 @@ class Elements:
                     if sub_el:  # элемент элемента класса
                         se = mod[cls]
                         if None in se:  # пополнение суб-элемента
+                            if sub_el in se[None]:
+                                se[None][sub_el][name] = {None: (el_type, doc)}
+                            else:
+                                se[None][sub_el] =\
+                                    {name: {None: (el_type, doc)}}
                             se[None][sub_el][name] = {None: (el_type, doc)}
                         else:  # добавление суб-элемента
                             se[None] = {
