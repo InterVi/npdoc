@@ -35,7 +35,7 @@ def get_first_spaces(line):
     """
     result = 0
     for ch in line:
-        if ch != ' ' and ch != '    ':
+        if ch != ' ' and ch != '	':
             break
         result += 1
     return result
@@ -56,24 +56,22 @@ def __for(func, lines, indent=-1):
     i = 0
     doc = IsDoc()
     for line in lines:
+        i += 1
         if (not line or line.isspace()) or doc.is_doc(line) or (
                     line.strip()[0] == '#'):
             # пропуск не нужного
-            i += 1
             continue
         if indent > -1:  # обработка только заданного блока
             fs = get_first_spaces(line)
             if fs < indent:
                 break
             elif fs != indent:  # пропуск вложенных блоков
-                i += 1
                 continue
         element = func(line)
         if element and element not in elements:
             # вернулось значение - добавляем в список
-            result.append((element, i))
+            result.append((element, i-1))
             elements.append(element)
-        i += 1
     return result
 
 
@@ -189,7 +187,7 @@ def get_elements(lines, indent=0):
             if c == '+' or c == '-':  # пропуск изменений переменных
                 return
             first = line.split('=')[0].strip()
-            chars = '.,+[]()'  # символы, которых быть не должно
+            chars = '	.,+[](){}*:;\'" '  # символы, которых быть не должно
             for ch in chars:
                 if first.find(ch) != -1:
                     return
