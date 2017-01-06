@@ -1,4 +1,5 @@
 """Утилиты для поиска различных элементов в модуле или классе."""
+import re
 
 
 class IsDoc:
@@ -187,11 +188,8 @@ def get_elements(lines, indent=0):
             if c == '+' or c == '-':  # пропуск изменений переменных
                 return
             first = line.split('=')[0].strip()
-            chars = '	.,+[](){}*:;\'" '  # символы, которых быть не должно
-            for ch in chars:
-                if first.find(ch) != -1:
-                    return
-            return first
+            if re.match('^[a-zAа-яЯ0-9-_]*$', first):
+                return first
     return __for(func, lines, indent)
 
 

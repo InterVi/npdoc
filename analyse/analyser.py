@@ -101,7 +101,7 @@ class Analyser:
                     elements = elements + init
                     docs = docs.update(utils.get_docs(block, init))
                     com = com.update(utils.get_comments(block, init))
-        for element in elements:  # дкументирование элементов
+        for element in elements:  # документирование элементов
             name = element[0]
             if is_cls and '(' in name:
                 # отсечение лишнего (для последовательности)
