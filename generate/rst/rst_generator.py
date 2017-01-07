@@ -151,6 +151,12 @@ class RSTGenerator:
         for e_name in sequence:  # обработка последовательности
             if e_name in content:  # если есть документация
                 element = content[e_name]
+
+                # ================================================
+                # ВРЕМЕННЫЙ КОСТЫЛЬ, чтобы приложение не вылетало
+                if type(element) != tuple:
+                    continue
+
                 if element[0] == ElementType.var:  # переменные
                     gv = self._gen_element(e_name, element[1], ElementType.var)
                     if gv:
@@ -160,9 +166,9 @@ class RSTGenerator:
                                                  ElementType.fun)
                     if doc_func:
                         doc_func = doc_func[3:]
-                    f_els = els + (name,)
-                    result +=\
-                        self._gen_func(module, cls, e_name, f_els, doc_func)
+                        f_els = els + (name,)
+                        result += self._gen_func(module, cls, e_name, f_els,
+                                                 doc_func)
                 elif element[0] == ElementType.cl:  # классы
                     doc_cls = self._gen_element(e_name, element,
                                                 ElementType.cl)
@@ -226,6 +232,12 @@ class RSTGenerator:
         for e_name in sequence:  # заполнение списков по типам
             if e_name in content:
                 element = content[e_name]
+
+                # ================================================
+                # ВРЕМЕННЫЙ КОСТЫЛЬ, чтобы приложение не вылетало
+                if type(element) != tuple:
+                    continue
+
                 if element[0] == ElementType.var:
                     var.append((e_name, element))
                 elif element[0] == ElementType.cl:
@@ -235,7 +247,9 @@ class RSTGenerator:
         for first in self.__prop['first']:  # обработка последовательности
             if first == 'v':  # переменные
                 for v in var:
-                    result += self._gen_element(v[0], v[1], ElementType.var)
+                    doc_vars = self._gen_element(v[0], v[1], ElementType.var)
+                    if doc_vars:
+                        result += doc_vars
             elif first == 'f':  # функции
                 for f in func:
                     if els:
@@ -243,12 +257,15 @@ class RSTGenerator:
                     else:
                         func_type = ElementType.met
                     doc_func = self._gen_element(f[0], f[1], func_type)[3:]
-                    result += self._gen_func(module, name, f[0], els, doc_func)
+                    if doc_func:
+                        result +=\
+                            self._gen_func(module, name, f[0], els, doc_func)
             elif first == 'c':  # классы
                 for c in classes:  # рекурсивное документирование подклассов
                     doc_cls = self._gen_element(c[0], c[1], ElementType.cl)[3:]
-                    result += self._gen_class(module, c[0], tuple(name),
-                                              doc_cls)
+                    if doc_cls:
+                        result += self._gen_class(module, c[0], tuple(name),
+                                                  doc_cls)
         return result
 
     def _gen_module(self, module):
@@ -279,14 +296,16 @@ class RSTGenerator:
             # генерация
             if e_type == ElementType.cl:  # отдельная обработка классов
                 for name in cls_sequence:
-                    if name[0] in elements:
-                        element = elements[name[0]]
+                    if name in elements:
+                        element = elements[name]
                         doc_cls = \
-                            self._gen_element(name[0], element, ElementType.cl)
+                            self._gen_element(name, element, ElementType.cl)
                         if doc_cls:
                             doc_cls = doc_cls[3:]
                             result +=\
-                                self._gen_class(module, name[0], doc=doc_cls)
+                                self._gen_class(module, name, doc=doc_cls)
+                        else:
+                            result += self._gen_class(module, name)
                 continue
             for name in sequence:  # обработка остальных типов
                 if name in elements:

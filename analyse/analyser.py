@@ -155,7 +155,7 @@ class Analyser:
             hie = ()
             if els:
                 hie = els + (name,)
-            self.sequence.add(module, cls, hie)
+            self.sequence.add(module, cls[0], hie)
             doc = ()
             doc_type = None
             if cls[0] in docs:  # поиск документации

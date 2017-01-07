@@ -655,7 +655,7 @@ class Sequence:
             else:  # искомого элемента в иерархии нет
                 return []
         if None in se_dict:
-            return se_dict[None][1]
+            return se_dict[None][0]
         return []
 
     def get_global_local_elements(self, module, el=()):
@@ -685,7 +685,7 @@ class Sequence:
             if cls in mod:
                 se = mod[cls]
                 if None in se:
-                    return se[None][1]
+                    return se[None][0]
         return []
 
     def get_self_local_elements(self, module, cls, el=()):
