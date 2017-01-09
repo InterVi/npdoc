@@ -103,9 +103,6 @@ class Analyser:
                     com = com.update(utils.get_comments(block, init))
         for element in elements:  # документирование элементов
             name = element[0]
-            if is_cls and '(' in name:
-                # отсечение лишнего (для последовательности)
-                name = name[:name.index('(')].strip()
             self.sequence.add(module, cls, els + (name,))
             doc = ()
             doc_type = None
@@ -136,22 +133,15 @@ class Analyser:
         com = utils.get_comments(block, classes)
         for cls in classes:
             name = cls[0]
-            if els:  # если класс вложенный, в модуле его не видно (говнокод?)
-                if '(' in name:
-                    name = name[:name.index('(')].strip()
-            else:  # если не вложенный, то надо составить иерархию наследования
-                sup = []
-                if '(' in name:
-                    sup_names = name[name.index('(')+1:name.index(')')]
-                    if ',' in sup_names:
-                        sup = sup_names.split(',')
-                        i = 0
-                        while i < len(sup):
-                            sup[i] = sup[i].strip()
-                    else:
-                        sup.append(sup_names.strip())
-                    name = name[:name.index('(')].strip()
-                self.classes.add(name, module, tuple(sup))  # добавление
+            sup = []
+            if '(' in name:
+                sup_names = name[name.index('(')+1:name.index(')')]
+                if ',' in sup_names:
+                    for sn in sup_names.split(','):
+                        sup.append(sn.strip())
+                else:
+                    sup.append(sup_names.strip())
+            self.classes.add(name, module, tuple(sup))  # добавление
             hie = ()
             if els:
                 hie = els + (name,)
@@ -165,8 +155,8 @@ class Analyser:
                 doc = tuple(com[cls[0]])
                 doc_type = DocType.com
             if els:  # сохранение в иерархии элементов
-                self.elements.add(cls[0], module, ElementType.cl, sup_cls,
-                                  els + (name,), doc=(doc_type, doc))
+                self.elements.add(cls[0], module, ElementType.cl, None,
+                                  els + (cls[0],), doc=(doc_type, doc))
             else:  # сохранние в модуле
                 self.elements.add(cls[0], module, ElementType.cl, sup_cls, els,
                                   doc=(doc_type, doc))
@@ -201,8 +191,6 @@ class Analyser:
             # предполагается, что сами элементы уже задокументированы
             block = utils.get_block(lines, element[1], indent)
             name = element[0]
-            if '(' in name:  # поэтому отсекаем лишнее
-                name = name[:name.index('(')].strip()
             hie = els + (name,)
             variables = []
             functions = []
@@ -210,13 +198,13 @@ class Analyser:
             for f in first:  # исследование содержимого каждого элемента
                 if var and f == 'v':  # переменные
                     variables = self._elements_or_func_doc(
-                        module, block, indent, is_cls, cls, hie)
+                        module, block, indent*2, is_cls, cls, hie)
                 elif func and f == 'f':  # функции
                     functions = self._elements_or_func_doc(
-                        module, block, indent, False, cls, hie, True)
+                        module, block, indent*2, False, cls, hie, True)
                 elif f == 'c':  # классы
                     classes = self._classes_doc(
-                        module, block, indent, hie, cls)
+                        module, block, indent*2, hie, cls)
             if variables or functions or classes:  # сохранение результата
                 result[name] = variables, functions, classes
         return result
@@ -346,29 +334,26 @@ class Analyser:
                 classes = self._classes_doc(name, module, 0)
                 for c in classes:  # каждый класс отдельно, т.к. нужны имена
                     code = utils.get_block(module, c[1], ind)
-                    c_name = c[0]
-                    if '(' in c_name:  # тут скобки не нужны
-                        c_name = c_name[:c_name.index('(')]
                     for fe in first:  # опять последовательность
                         # документирование содержимого классов
                         if fe == 'v':  # переменные
                             self._elements_or_func_doc(name, code, ind, True,
-                                                       c_name)
+                                                       c[0])
                         elif fe == 'f':  # методы
                             functions = self._elements_or_func_doc(name, code,
                                                                    ind, True,
-                                                                   c_name,
+                                                                   c[0],
                                                                    func=True)
-                            de = self._doc_elements(code, name, True, c_name,
+                            de = self._doc_elements(code, name, True, c[0],
                                                     (), functions, ind, first,
                                                     var_doc, func_doc)
-                            parse_dict(module, de, c_name, ind)
+                            parse_dict(module, de, c[0], ind)
                         elif fe == 'c':  # классы
                             c_classes = self._classes_doc(name, code, ind)
-                            de = self._doc_elements(code, name, True, c_name,
-                                                    (), c_classes, ind, first,
+                            de = self._doc_elements(code, name, True, c[0], (),
+                                                    c_classes, ind, first,
                                                     var_doc, func_doc)
-                            parse_dict(module, de, c_name, ind)
+                            parse_dict(module, de, c[0], ind)
 
     def analyse_all(self, modules, names):
         """Анализ и полное документирование модулей.

@@ -150,6 +150,7 @@ class Generator:
                 if not os.path.isdir(new_out):
                     os.mkdir(new_out)
                 gen_package(packages[pack], new_out)
+
         path_ = self.__prop['path']
         if os.path.isdir(path_):  # если это директория (пакет)
             gen_package(path_, self.__prop['out'], True)

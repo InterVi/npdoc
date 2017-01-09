@@ -164,7 +164,9 @@ def get_init_elements(init):
             # если PEP8 не соблюдается
             line = __trim_if(line)
             if line[:5] == 'self.' and '=' in line:  # проверка середины
-                return line[5:line.index('=')].strip()
+                first = line[5:line.index('=')].strip()
+                if re.match('^[a-zAа-яЯ0-9-_]*$', first):
+                    return first
 
     return __for(func, init)
 
@@ -184,9 +186,6 @@ def get_elements(lines, indent=0):
         elif line[:4] == 'def ' or line[:6] == 'while ':
             return
         if '=' in line:  # поиск присвоения в строке
-            c = line[line.index('=')-1]
-            if c == '+' or c == '-':  # пропуск изменений переменных
-                return
             first = line.split('=')[0].strip()
             if re.match('^[a-zAа-яЯ0-9-_]*$', first):
                 return first
@@ -399,12 +398,12 @@ def get_indent(lines):
     """Получить кол-во символов отступа в начале строки.
 
     :param lines: список строк
-    :return: int
+    :return: int (-1 если отступ не найден)
     """
     block = False
     doc = IsDoc()
     for line in lines:
-        if not doc.is_doc(line) and\
+        if not doc.is_doc(line) and not block and\
                 (line[:6] == 'class ' or line[:4] == 'def ') and ':' in line:
             # поиск блока
             block = True
@@ -413,6 +412,7 @@ def get_indent(lines):
                     line.strip()[0] == '#'):
             # определение отступа в блоке
             return get_first_spaces(line)
+    return -1
 
 
 def get_index(elements, name):

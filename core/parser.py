@@ -27,9 +27,9 @@ def get_dict(args, lang):
                         help=lang['HELP']['iface'], choices=['console'])
     parser.add_argument('-gen', default='rst', type=str,
                         help=lang['HELP']['gen'], choices=['rst'])
-    parser.add_argument('-v', '--version', default=False, action='store_false',
+    parser.add_argument('-v', '--version', default=False, action='store_true',
                         dest='version', help=lang['HELP']['ver'])
-    parser.add_argument('-h', '--help', default=False, action='store_false',
+    parser.add_argument('-h', '--help', default=False, action='store_true',
                         dest='help', help=lang['HELP']['help'])
     parser.add_argument('-path', type=str, help=lang['HELP']['path'])
     parser.add_argument('-out', type=str, help=lang['HELP']['out'])
@@ -37,14 +37,14 @@ def get_dict(args, lang):
                         help=lang['HELP']['step'])
     parser.add_argument('-proc', type=int, default=1,
                         help=lang['HELP']['proc'])
-    parser.add_argument('-numbered', default=False, action='store_false',
+    parser.add_argument('-numbered', default=False, action='store_true',
                         help=lang['HELP']['numbered'])
-    parser.add_argument('-hidden', default=False, action='store_false',
+    parser.add_argument('-hidden', default=False, action='store_true',
                         help=lang['HELP']['hidden'])
     parser.add_argument('-lang', type=str, help=lang['HELP']['lang'])
-    parser.add_argument('-nohie', default=False, action='store_false',
+    parser.add_argument('-nohie', default=False, action='store_true',
                         help=lang['HELP']['nohie'])
-    parser.add_argument('-notype', default=False, action='store_false',
+    parser.add_argument('-notype', default=False, action='store_true',
                         help=lang['HELP']['notype'])
     return vars(parser.parse_known_args(args)[0]), parser.format_help()
 

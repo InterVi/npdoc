@@ -118,6 +118,7 @@ class RSTGenerator:
         :param doc: описание функции
         :return: list
         """
+        gels = els + (name,)  # для вызова функций
         if els:  # составление иерархии в заголовке
             hie = ''
             for e in els:
@@ -128,35 +129,21 @@ class RSTGenerator:
             result = [name, '+' * len(name), '']
         if cls:  # если это метод класса
             if els:  # если это локальная функция
-                l_els = els + (name,)
-                content = self.elements.get_self_local(module, cls, l_els)
+                content = self.elements.get_self_local(module, cls, gels)
                 sequence =\
-                    self.sequence.get_self_local_elements(module, cls, l_els)
+                    self.sequence.get_self_local_elements(module, cls, gels)
             else:
-                content = self.elements.get_self_local(module, cls, els)
-                sequence =\
-                    self.sequence.get_self_local_elements(module, cls, els)
+                content = self.elements.get_self(module, cls)
+                sequence = self.sequence.get_self_elements(module, cls)
         else:  # если это функция модуля
-            if els:  # если это локальная функция
-                l_els = els + (name,)
-                content = self.elements.get_global_local(module, l_els)
-                sequence = self.sequence.get_global_local_elements(module,
-                                                                   l_els)
-            else:
-                content = self.elements.get_global_local(module, els)
-                sequence = self.sequence.get_global_local_elements(module, els)
+            content = self.elements.get_global_local(module, gels)
+            sequence = self.sequence.get_global_local_elements(module, gels)
         if doc:  # вставка описания функции
             result += doc
             result.append('')
         for e_name in sequence:  # обработка последовательности
             if e_name in content:  # если есть документация
                 element = content[e_name]
-
-                # ================================================
-                # ВРЕМЕННЫЙ КОСТЫЛЬ, чтобы приложение не вылетало
-                if type(element) != tuple:
-                    continue
-
                 if element[0] == ElementType.var:  # переменные
                     gv = self._gen_element(e_name, element[1], ElementType.var)
                     if gv:
@@ -202,16 +189,16 @@ class RSTGenerator:
         else:  # если это нормальный класс
             result = [name, '-' * len(name), '']
             if not self.__prop['nohie']:
-                sub = self.classes.get_sub_names(name, module)
-                sup = self.classes.get_super_names(name, module)
+                sub = self.classes.get_sub_names(name)
+                sup = self.classes.get_super_names(name)
                 # перечисление супер и суб классов
                 sb = ''
                 for s in sub:
-                    s += s[0] + ' (' + s[1] + '), '
+                    sb += str([sc for sc in s[0]]) + ' (' + s[1] + '), '
                 sb = sb[:-2]
                 sp = ''
                 for s in sup:
-                    s += s[0] + ' (' + s[1] + '), '
+                    sp += s + ', '
                 sp = sp[:-2]
                 if sup:  # если есть супер-классы
                     result +=\
@@ -232,12 +219,6 @@ class RSTGenerator:
         for e_name in sequence:  # заполнение списков по типам
             if e_name in content:
                 element = content[e_name]
-
-                # ================================================
-                # ВРЕМЕННЫЙ КОСТЫЛЬ, чтобы приложение не вылетало
-                if type(element) != tuple:
-                    continue
-
                 if element[0] == ElementType.var:
                     var.append((e_name, element))
                 elif element[0] == ElementType.cl:

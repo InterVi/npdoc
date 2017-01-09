@@ -9,7 +9,7 @@ class Classes:
         """Словарь с классами.
 
         Ключ - str, название класса
-        Значение - tuple, ((супер-класс, модуль), ...), модуль)
+        Значение - tuple, ((супер-класс, ...), модуль)
         """
         self.names = {}
         """Словарь с именами классов.
@@ -37,13 +37,13 @@ class Classes:
 
         :param name: имя класса
         :param module: имя модуля (при None - поиск по всем модулям)
-        :return: tuple, супер-классы - ((супер-класс, модуль), ...)
+        :return: tuple, супер-классы - (супер-класс, ...)
         """
         if module:
             result = []
             if name in self.cls:
                 for cls in self.cls[name][0]:
-                    if cls[0] in self.names[module]:
+                    if cls in self.names[module]:
                         result.append(cls)
             return tuple(result)
         else:
@@ -54,7 +54,7 @@ class Classes:
 
         :param name: имя класса
         :param module: имя модуля (при None - поиск по всем модулям)
-        :return: tuple, суб-классы - ((суб-класс, модуль), ...)
+        :return: tuple, суб-классы - ((суб-класс, ...), модуль)
         """
         result = []
         for cls in self.cls:
@@ -62,9 +62,9 @@ class Classes:
             if val[0] and name in val[0][0]:
                 if module:
                     if module == val[1]:
-                        result.append(cls)
+                        result.append(self.cls[cls])
                 else:
-                    result.append(cls)
+                    result.append(self.cls[cls])
         result = tuple(result)
         return result
 
@@ -287,7 +287,10 @@ class Elements:
         if module in self.els:
             mod = self.els[module]
             if None in mod and el in mod[None]:
-                return mod[None][el]
+                result = mod[None][el].copy()
+                if None in result:
+                    del result[None]
+                return result
         return {}
 
     def get_self(self, module, cls):
@@ -300,7 +303,10 @@ class Elements:
         if module in self.els:
             mod = self.els[module]
             if cls in mod:
-                return mod[cls]
+                result = mod[cls].copy()
+                if None in result:
+                    del result[None]
+                return result
         return {}
 
     def get_self_local(self, module, cls, el):
@@ -314,7 +320,10 @@ class Elements:
         if module in self.els:
             mod = self.els[module]
             if cls in mod and None in mod[cls] and el in mod[cls][None]:
-                return mod[cls][None][el]
+                result = mod[cls][None][el].copy()
+                if None in result:
+                    del result[None]
+                return result
         return {}
 
 
@@ -465,7 +474,10 @@ class SubElements(Elements):
                 else:
                     break
             if i == len(el):
-                return mod
+                result = mod.copy()
+                if None in result:
+                    del result[None]
+                return result
             return {}
 
     def get_global_local(self, module, el=()):
