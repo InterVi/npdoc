@@ -153,15 +153,15 @@ class RSTGenerator:
                                                  ElementType.fun)
                     if doc_func:
                         doc_func = doc_func[3:]
-                        f_els = els + (name,)
-                        result += self._gen_func(module, cls, e_name, f_els,
-                                                 doc_func)
+                    f_els = els + (name,)
+                    result += self._gen_func(module, cls, e_name, f_els,
+                                             doc_func)
                 elif element[0] == ElementType.cl:  # классы
                     doc_cls = self._gen_element(e_name, element,
                                                 ElementType.cl)
                     if doc_cls:
                         doc_cls = doc_cls[3:]
-                        result += self._gen_class(module, e_name, els, doc_cls)
+                    result += self._gen_class(module, e_name, els, doc_cls)
             # рекурсивное документирование функций
             # r_els = els + (name,)
             # result += self._gen_func(module, cls, e_name, r_els)
