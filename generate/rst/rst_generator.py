@@ -192,13 +192,13 @@ class RSTGenerator:
                 sub = self.classes.get_sub_names(name)
                 sup = self.classes.get_super_names(name)
                 # перечисление супер и суб классов
-                sb = ''
+                sb = ''  # строка с суб-классами
                 for s in sub:
-                    sb += str([sc for sc in s[0]]) + ' (' + s[1] + '), '
+                    sb += s[0] + ' (' + s[1] + '), '
                 sb = sb[:-2]
-                sp = ''
+                sp = ''  # строка с супер-классами
                 for s in sup:
-                    sp += s + ', '
+                    sp += s[0] + ' (' + s[1] + '), '
                 sp = sp[:-2]
                 if sup:  # если есть супер-классы
                     result +=\

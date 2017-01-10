@@ -158,15 +158,13 @@ def get_init_elements(init):
     """
     def func(line):  # поиск присвоения в строке
         line = line.strip()
-        if line[:5] == 'self.' and '=' in line:
-            return line[5:line.index('=')].strip()
-        elif line[:3] == 'if ' or line[:5] == 'elif ':
+        if line[:3] == 'if ' or line[:5] == 'elif ':
             # если PEP8 не соблюдается
             line = __trim_if(line)
-            if line[:5] == 'self.' and '=' in line:  # проверка середины
-                first = line[5:line.index('=')].strip()
-                if re.match('^[a-zAа-яЯ0-9-_]*$', first):
-                    return first
+        if line[:5] == 'self.' and '=' in line:
+            first = line[5:line.index('=')].strip()
+            if re.match('^[a-zAа-яЯ0-9-_]*$', first):
+                return first
 
     return __for(func, init)
 

@@ -37,104 +37,82 @@ class Classes:
 
         :param name: имя класса
         :param module: имя модуля (при None - поиск по всем модулям)
-        :return: tuple, супер-классы - (супер-класс, ...)
+        :return: tuple, супер-классы - ((супер-класс, модуль), ...)
         """
-        if module:
-            result = []
-            if name in self.cls:
-                for cls in self.cls[name][0]:
-                    if cls in self.names[module]:
-                        result.append(cls)
-            return tuple(result)
-        else:
-            return self.cls[name][0]
+        result = []
+        if name in self.cls:
+            for cls in self.cls[name][0]:
+                if module and cls not in self.names[module]:
+                    continue
+                mod = 'None'
+                if cls in self.cls:
+                    mod = self.cls[cls][1]
+                result.append((cls, mod))
+        return tuple(result)
 
     def get_sub_names(self, name, module=None):
         """Получить суб-классы.
 
         :param name: имя класса
         :param module: имя модуля (при None - поиск по всем модулям)
-        :return: tuple, суб-классы - ((суб-класс, ...), модуль)
+        :return: tuple, суб-классы - ((суб-класс, модуль), ...)
         """
         result = []
         for cls in self.cls:
             val = self.cls[cls]
-            if val[0] and name in val[0][0]:
+            if name in val[0]:
                 if module:
                     if module == val[1]:
-                        result.append(self.cls[cls])
+                        result.append((cls, val[1]))
                 else:
-                    result.append(self.cls[cls])
+                    result.append((cls, val[1]))
         result = tuple(result)
         return result
 
     def get_sub_or_sup_hie(self, name, sub=True, module=None):
-        """Получить полную иерархию всех супер или суб классов.
+        """Получить полную иерархию классов.
 
-        :param name: имя класса
-        :param sub: bool, True - суб-классы, False - супер-классы
-        :param module: имя модуля (при None - поиск по всем модулям)
-        :return: dict,
-        {класс: ({
-            класс: ... / класс: ((имя, модуль), ...) / класс: None, ...
-            }, модуль), ...},
-        Пример:
-        {Main: ({
-            SubMain: ({SSMain: (One, Two), other), TwoSubMain: None}
-            }, main), Enum: None}
+        :param name: str, имя класса
+        :param sub: bool, True - иерархия суб-классов, False - супер-классов
+        :param module: str, имя модулья
+        :return: dict, {класс: (модуль, [{класс: ...}, ...]), ...}
         """
-        def get_sub(tuple_arg):
-            """Разворачивание иерархии.
+        def parse_tuple(tuple_arg):
+            """Получить дальнейшую ступень иерархии классов.
 
-            :param tuple_arg: tuple, имена классов
-            :return: dict,
-            {класс: (((класс, модуль), ...), модуль), ...}
+            :param tuple_arg: tuple, (name, module), (класс, модуль)
+            :return: dict, {класс: (модуль, ((класс, модуль), ...))}
             """
-            result = {}
-            for tup in tuple_arg:
-                if sub:  # получение суб-классов
-                    sts = self.get_sub_names(*tup)
-                else:  # супер-классов
-                    sts = self.get_super_names(*tup)
-                if sts:  # раскрытый результат
-                    result[tup[0]] = sts, tup[1]
-                else:  # если наследников нет
-                    result[tup[0]] = None
-            return result
+            if sub:
+                names = self.get_sub_names(tuple_arg[0])
+            else:
+                names = self.get_super_names(tuple_arg[0])
+            return {tuple_arg[0]: (tuple_arg[1], names)}
 
         def parse_dict(dict_arg):
-            """Рекурсивное построение иерархии с помощью get_sub.
+            """Получить полную иерархию классов.
 
-            :param dict_arg: dict,
-            {класс: (((класс, модуль), ...), модуль), ...}
-            :return: конечный результат (см. док. get_sub_or_sup_hie)
+            :param dict_arg:
+            dict, dict, {класс: (модуль, ((класс, модуль), ...))}
+            :return: dict, {класс: (модуль, [{класс: ...}, ...]), ...}
             """
-            result = dict_arg  # присвоение для реализации рекурсии
-            dicts = {}  # для рекурсии
-            for d in dict_arg:  # цикл, вызываемый рекурсивно
-                val = dict_arg[d]
-                if type(val) == tuple:  # раскрытие tuple далее
-                    nd = get_sub(val)  # получаем словарь
-                    if nd:  # иерархия раскрыта на следуюший уровень
-                        dicts[d] = nd  # сохраняем для рекурсии
-                elif type(val) == dict:
-                    # если уже раскрыто - опускаемся на уровень глубже
-                    # вложенные словари будут разобраны
-                    dicts[d] = val
-            if dicts:
-                for d in dicts:
-                    # рекурсия метода для каждой итерации
-                    # для глубокого раскрытия каждого словаря
-                    val = parse_dict(dicts[d])
-                    result[d] = val
-                return result  # возвращаем раскрытиые словари
-            else:  # выход на предельной глубине, когда разбирать нечего
-                return result
+            result = {}
+            for cls in dict_arg:
+                val = dict_arg[cls]
+                if val[1]:  # раскрытие tuple
+                    add = []
+                    for tup in val[1]:  # обработка всех пар (класс, модуль)
+                        if tup:
+                            parse = parse_tuple(tup)  # дальнейшее раскрытие
+                            d_parse = parse_dict(parse)  # рекурсия
+                            if d_parse:
+                                add.append(d_parse)
+                            else:
+                                add.append(parse)
+                    result[cls] = (val[0], add)
+            return result
 
-        if sub:  # раскрытие иерархии суб-классов
-            return parse_dict(self.get_sub_names(name, module))
-        else:  # супер-классов
-            return parse_dict(self.get_super_names(name))
+        return parse_dict(parse_tuple((name, module)))
 
 
 class Elements:
