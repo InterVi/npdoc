@@ -46,6 +46,12 @@ def get_dict(args, lang):
                         help=lang['HELP']['nohie'])
     parser.add_argument('-notype', default=False, action='store_true',
                         help=lang['HELP']['notype'])
+    parser.add_argument('-hide', default=False, action='store_true',
+                        help=lang['HELP']['hide'])
+    parser.add_argument('-private', default=False, action='store_true',
+                        help=lang['HELP']['private'])
+    parser.add_argument('-magic', default=False, action='store_true',
+                        help=lang['HELP']['magic'])
     return vars(parser.parse_known_args(args)[0]), parser.format_help()
 
 

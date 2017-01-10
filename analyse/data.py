@@ -18,6 +18,17 @@ class Classes:
         Значение - list, [класс, ...]
         """
 
+    @staticmethod
+    def cut_round(line):
+        """Обрезать скобки.
+
+        :param line: str
+        :return: str, без скобок
+        """
+        if '(' in line:
+            return line[:line.index('(')].strip()
+        return line
+
     def add(self, name, module, sup_names=()):
         """Добавить класс в словари.
 
@@ -26,6 +37,7 @@ class Classes:
         :param sup_names: tuple, наследуемые классы,
         ((класс, модуль), ...)
         """
+        name = self.cut_round(name)
         self.cls[name] = (sup_names, module)
         if module in self.names:
             self.names[module].append(name)
@@ -39,6 +51,7 @@ class Classes:
         :param module: имя модуля (при None - поиск по всем модулям)
         :return: tuple, супер-классы - ((супер-класс, модуль), ...)
         """
+        name = self.cut_round(name)
         result = []
         if name in self.cls:
             for cls in self.cls[name][0]:
@@ -57,6 +70,7 @@ class Classes:
         :param module: имя модуля (при None - поиск по всем модулям)
         :return: tuple, суб-классы - ((суб-класс, модуль), ...)
         """
+        name = self.cut_round(name)
         result = []
         for cls in self.cls:
             val = self.cls[cls]
@@ -77,6 +91,8 @@ class Classes:
         :param module: str, имя модулья
         :return: dict, {класс: (модуль, [{класс: ...}, ...]), ...}
         """
+        name = self.cut_round(name)
+
         def parse_tuple(tuple_arg):
             """Получить дальнейшую ступень иерархии классов.
 

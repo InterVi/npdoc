@@ -65,6 +65,20 @@ class Analyser:
             self.elements.add(None, name, ElementType.mo, doc=(doc_type, doc))
         self.sequence.add(name)
 
+    def _is_private(self, name):
+        """Проверить, является ли имя приватным и разрешено ли это.
+
+        :param name: str, имя элемента
+        :return: bool, True - нельзя документировать, False - можно
+        """
+        if ((name[:1] == '_' and name[:2] != '__') and not
+            self.__prop['hide']) or ((name[:2] == '__' and name[-2:] != '__')
+                                     and not self.__prop['private']) or\
+            ((name[:2] == '__' and name[-2:] == '__')
+             and not self.__prop['magic']):
+            return True
+        return False
+
     def _elements_or_func_doc(self, module, block, indent, is_cls, cls=None,
                               els=(), func=False):
         """Документирование переменных или функций в блоке кода.
@@ -103,6 +117,8 @@ class Analyser:
                     com = com.update(utils.get_comments(block, init))
         for element in elements:  # документирование элементов
             name = element[0]
+            if self._is_private(name):
+                continue
             self.sequence.add(module, cls, els + (name,))
             doc = ()
             doc_type = None
@@ -133,6 +149,8 @@ class Analyser:
         com = utils.get_comments(block, classes)
         for cls in classes:
             name = cls[0]
+            if self._is_private(name):
+                continue
             sup = []
             if '(' in name:
                 sup_names = name[name.index('(')+1:name.index(')')]
@@ -191,6 +209,8 @@ class Analyser:
             # предполагается, что сами элементы уже задокументированы
             block = utils.get_block(lines, element[1], indent)
             name = element[0]
+            if self._is_private(name):
+                continue
             hie = els + (name,)
             variables = []
             functions = []
@@ -255,6 +275,8 @@ class Analyser:
             result = elements  # первичный словарь
             dicts = {}  # то, что передаётся в рекурсию
             for e_name in elements:
+                if self._is_private(e_name):
+                    continue
                 element = elements[e_name]  # элемент словаря
                 if type(element) == dict:  # для последующего раскрытия
                     dicts[e_name] = element
@@ -262,14 +284,12 @@ class Analyser:
                     # element - (переменные, функции, классы)
                     this_hie = hie + (e_name,)
                     # проверка глубин для типов элементов
+                    var = False
+                    func = False
                     if d_var >= step or d_var == -1:  # переменные
                         var = True
-                    else:
-                        var = False
                     if d_func >= step or d_func == -1:  # функции
                         func = True
-                    else:
-                        func = False
                     val = {}  # раскрытые вглубь элементы
                     for ft in first:  # обработка в заданной последовательности
                         if ft == 'f':  # раскрытие функций
@@ -311,14 +331,12 @@ class Analyser:
 
         self._module_doc(module, name)  # документирование модуля
         ind = utils.get_indent(module)  # получение отступа
+        var_doc = False
+        func_doc = False
         if d_var >= 1 or d_var == -1:  # документировать ли переменные модуля
             var_doc = True
-        else:
-            var_doc = False
         if d_func >= 1 or d_func == -1:  # документировать ли функции модуля
             func_doc = True
-        else:
-            func_doc = False
         for f in first:  # документирование в заданной последовательности
             if f == 'v':  # переменные
                 self._elements_or_func_doc(name, module, 0, False)
