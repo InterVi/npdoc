@@ -207,13 +207,13 @@ class Analyser:
             for f in first:  # исследование содержимого каждого элемента
                 if var and f == 'v':  # переменные
                     variables = self._elements_or_func_doc(
-                        module, block, indent*2, is_cls, cls, hie)
+                        module, block, indent, is_cls, cls, hie)
                 elif func and f == 'f':  # функции
                     functions = self._elements_or_func_doc(
-                        module, block, indent*2, False, cls, hie, True)
+                        module, block, indent, False, cls, hie, True)
                 elif f == 'c':  # классы
                     classes = self._classes_doc(
-                        module, block, indent*2, hie, cls)
+                        module, block, indent, hie, cls)
             if variables or functions or classes:  # сохранение результата
                 result[name] = variables, functions, classes
         return result

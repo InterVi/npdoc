@@ -410,6 +410,8 @@ class SubElements(Elements):
                 else:
                     break
                 pos += 1
+            if pos > 0:
+                pos -= 1
             return pos, se_dict
 
         if not sub_el:
@@ -423,7 +425,9 @@ class SubElements(Elements):
                     if cls in mod:
                         se = mod[cls]
                         if None in se:
-                            add(*get_pos(se))
+                            p_pos = get_pos(se)
+                            if type(p_pos[1]) == dict:
+                                add(*p_pos)
                         else:
                             mod[cls] = {None: {}}
                             add(0, mod[cls][None])
@@ -433,7 +437,9 @@ class SubElements(Elements):
                 else:
                     if None in mod:
                         se = mod[None]
-                        add(*get_pos(se))
+                        p_pos = get_pos(se)
+                        if type(p_pos[1]) == dict:
+                            add(*p_pos)
                     else:
                         mod[None] = {}
                         add(0, mod[None])

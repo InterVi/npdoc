@@ -144,6 +144,11 @@ class RSTGenerator:
         for e_name in sequence:  # обработка последовательности
             if e_name in content:  # если есть документация
                 element = content[e_name]
+
+                # ВРЕМЕННЫЙ КОСТЫЛЬ
+                if type(element) != tuple:
+                    continue
+
                 if element[0] == ElementType.var:  # переменные
                     gv = self._gen_element(e_name, element[1], ElementType.var)
                     if gv:
