@@ -1,6 +1,12 @@
 """Утилиты для поиска различных элементов в модуле или классе."""
 import re
 
+__all__ = [
+    'IsDoc', 'get_first_spaces', 'get_classes', 'get_init_elements',
+    'get_elements', 'get_functions', 'get_docs', 'get_comments',
+    'get_module_docs_or_comments', 'get_block', 'get_indent', 'get_index'
+]
+
 
 class IsDoc:
     """Определение секций с документацией."""
@@ -206,25 +212,34 @@ def get_functions(lines, start=0):
     return __for(func, lines, start)
 
 
-def get_docs(lines, elements):
+def get_docs(lines, elements, strip=False):
     """Получить документацию по элементам.
 
     :param lines: список строк
     :param elements: tuple / list, элементы, (имя, индекс)
+    :param strip: bool, True - обрезать отступы
     :return: dict, {имя: [документация...], ...}
     """
     result = {}
     for el in elements:
         i = el[1]+1
+        indent = -1
         doc = IsDoc()
         add = []
         while i < len(lines):
-            line = lines[i].strip()
+            no_strip = lines[i]  # для получения отступа
+            line = no_strip.strip()  # для остальных алгоритмов
+            spaces = ''
+            if indent != -1:  # если первый отступ уже известен
+                spaces = ' ' * (get_first_spaces(no_strip) - indent)
             if (not doc.doc and not line) or (line and line[0] == '#'):
                 # пропуск комментов и пустых строк ДО
                 i += 1
                 continue
             if doc.is_doc(line):
+                if indent == -1:  # получение первого отступа в документации
+                    indent = get_first_spaces(no_strip)
+                    spaces = ' ' * (get_first_spaces(no_strip) - indent)
                 if not doc.doc:  # это однострочная документация
                     if line == '"""':  # строка состоит из закрывающих кавычек
                         break
@@ -237,8 +252,12 @@ def get_docs(lines, elements):
                     line = line[line.index('"""')+3:]
                     if not line:
                         continue
+                if not strip:
+                    line = spaces + line
                 add.append(line)
             elif not line:  # сохранение пустых строк внутри документации
+                if not strip:
+                    line = spaces + line
                 add.append(line)
             else:
                 break
@@ -323,17 +342,23 @@ def get_comments(lines, elements):
     return result
 
 
-def get_module_docs_or_comments(lines, com=False):
+def get_module_docs_or_comments(lines, com=False, strip=False):
     """Получить документацию или комментарии модуля.
 
     :param lines: список строк
     :param com: bool, True - получить комментарии, False - документацию
+    :param strip: bool, True - обрезать отступы
     :return: list
     """
     result = []
     doc = IsDoc()
+    indent = -1
     for line in lines:
-        line = line.strip()
+        no_strip = line  # для получения отступа
+        line = line.strip()  # для остальных алгоритмов
+        spaces = ''
+        if indent != -1:  # если отступ уже известен
+            spaces = ' ' * (get_first_spaces(no_strip) - indent)
         if not doc.doc and (not line or (line[:6] == 'import'
                                          or line[:4] == 'from')):
             # пропуск импортов и пустых строк ДО
@@ -345,6 +370,11 @@ def get_module_docs_or_comments(lines, com=False):
         elif com:  # выход из цикла при завершении комментариев
             break
         if not com and doc.is_doc(line):  # сохранение документации
+            if not strip:
+                if indent == -1:  # получение первого отступа в документации
+                    indent = get_first_spaces(no_strip)
+                    spaces = ' ' * (get_first_spaces(no_strip) - indent)
+                line = spaces + line
             result.append(line)
             if not doc.doc:  # документация однострочная - прерывание цикла
                 break
@@ -402,7 +432,8 @@ def get_indent(lines):
     doc = IsDoc()
     for line in lines:
         if not doc.is_doc(line) and not block and\
-                (line[:6] == 'class ' or line[:4] == 'def ') and ':' in line:
+                ((line[:6] == 'class ' or line[:4] == 'def ') and ':' in line)\
+                or line[:5] == 'pass ':
             # поиск блока
             block = True
             continue

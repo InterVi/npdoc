@@ -152,6 +152,10 @@ class Generator:
                 gen_package(packages[pack], new_out)
 
         path_ = self.__prop['path']
+        if not os.path.isdir(self.__prop['out']):
+            os.mkdir(self.__prop['out'])
+        if self.__prop['cleardir']:
+            writer.clear_dir(self.__prop['out'])
         if os.path.isdir(path_):  # если это директория (пакет)
             gen_package(path_, self.__prop['out'], True)
             return True

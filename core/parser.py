@@ -52,6 +52,10 @@ def get_dict(args, lang):
                         help=lang['HELP']['private'])
     parser.add_argument('-magic', default=False, action='store_true',
                         help=lang['HELP']['magic'])
+    parser.add_argument('-strip', default=False, action='store_true',
+                        help=lang['HELP']['strip'])
+    parser.add_argument('-cleardir', default=False, action='store_true',
+                        help=lang['HELP']['cleardir'])
     return vars(parser.parse_known_args(args)[0]), parser.format_help()
 
 

@@ -57,9 +57,11 @@ class Analyser:
         :param name: имя модуля
         """
         doc_type = DocType.doc
-        doc = utils.get_module_docs_or_comments(module)
+        doc = utils.get_module_docs_or_comments(module,
+                                                strip=self.__prop['strip'])
         if not doc:  # если нет документации - читем комменты
-            doc = utils.get_module_docs_or_comments(module, True)
+            doc = utils.get_module_docs_or_comments(module, True,
+                                                    self.__prop['strip'])
             doc_type = DocType.com
         if doc:
             self.elements.add(None, name, ElementType.mo, doc=(doc_type, doc))
@@ -103,7 +105,7 @@ class Analyser:
         else:  # поиск переменных
             elements = utils.get_elements(block, indent)
             el_type = ElementType.var
-        docs = utils.get_docs(block, elements)
+        docs = utils.get_docs(block, elements, self.__prop['strip'])
         # для элементов без документации будут использоватся комменты
         com = utils.get_comments(block, elements)
         if not func and is_cls:  # проверка __init__ в классе
@@ -113,7 +115,8 @@ class Analyser:
                 init = utils.get_init_elements(utils.get_block(block, index))
                 if init:  # обновление данных
                     elements = elements + init
-                    docs = docs.update(utils.get_docs(block, init))
+                    docs = docs.update(utils.get_docs(block, init,
+                                                      self.__prop['strip']))
                     com = com.update(utils.get_comments(block, init))
         for element in elements:  # документирование элементов
             name = element[0]
@@ -145,7 +148,7 @@ class Analyser:
         :return: list, [(имя(супер-классы), индекс), (имя, индекс), ...]
         """
         classes = utils.get_classes(block, indent)
-        docs = utils.get_docs(block, classes)
+        docs = utils.get_docs(block, classes, self.__prop['strip'])
         com = utils.get_comments(block, classes)
         for cls in classes:
             name = cls[0]

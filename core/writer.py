@@ -1,7 +1,22 @@
 """Модуль для записи проектов в файлы."""
 import os
+import shutil
 
 __all__ = ['write_rst_project']
+
+
+def clear_dir(path_dir):
+    """Очистить директорию.
+
+    :param path_dir: str, полный путь к директории
+    """
+    content = os.listdir(path_dir)
+    for c in content:
+        path = os.path.join(path_dir, c)
+        if os.path.isfile(path):  # удаление файлов
+            os.remove(path)
+        elif os.path.isdir(path):  # удаление директорий
+            shutil.rmtree(path)
 
 
 def write_rst_project(modules, mods, index, path):
