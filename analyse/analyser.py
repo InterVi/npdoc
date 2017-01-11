@@ -36,20 +36,6 @@ class Analyser:
         self.__prop = prop
         """Словарь с настройками, переданный в конструктор."""
 
-    def __get_prop(self, name):
-        """Получить опцию из настроек.
-
-        :param name: имя опции
-        :return: True / False или значение, или None (если не найдено)
-        """
-        if name in self.__prop:
-            if self.__prop[name] == 'yes':
-                return True
-            elif self.__prop[name] == 'no':
-                return False
-            else:
-                return self.__prop[name]
-
     def _module_doc(self, module, name):
         """Документирование модуля.
 
@@ -239,10 +225,10 @@ class Analyser:
         :param name: имя модуля
         """
         # получение настроек
-        first = self.__get_prop('first')  # последовательность обработки
-        depth = self.__get_prop('depth')  # общая глубина докуметирования
-        d_var = self.__get_prop('depth_vars')  # для переменных
-        d_func = self.__get_prop('depth_func')  # для функций
+        first = self.__prop['first']  # последовательность обработки
+        depth = self.__prop['depth']  # общая глубина докуметирования
+        d_var = self.__prop['depth_vars']  # для переменных
+        d_func = self.__prop['depth_func']  # для функций
 
         def parse_dict(lines, elements, cls, indent, hie=(), step=0):
             """Глубинный разбор всех элементов.

@@ -162,9 +162,6 @@ class RSTGenerator:
                     if doc_cls:
                         doc_cls = doc_cls[3:]
                     result += self._gen_class(module, e_name, els, doc_cls)
-            # рекурсивное документирование функций
-            # r_els = els + (name,)
-            # result += self._gen_func(module, cls, e_name, r_els)
         return result
 
     def _gen_class(self, module, name, els=(), doc=None):
