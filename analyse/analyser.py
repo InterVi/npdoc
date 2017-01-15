@@ -84,10 +84,10 @@ class Analyser:
         """
         if func:  # поиск функций
             elements = utils.get_functions(block, indent)
-            if indent == 0:
-                el_type = ElementType.fun
-            else:
+            if cls:
                 el_type = ElementType.met
+            else:
+                el_type = ElementType.fun
         else:  # поиск переменных
             elements = utils.get_elements(block, indent)
             el_type = ElementType.var
