@@ -243,7 +243,7 @@ class Elements:
                     }
                 else:  # пополнение элементов модуля
                     self.els[module] = {
-                        None: {None: {None: {name: (el_type, doc)}}}
+                        None: {None: {name: (el_type, doc)}}
                     }
 
     def get_module(self, module):

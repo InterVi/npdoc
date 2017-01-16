@@ -160,8 +160,7 @@ class RSTGenerator:
                     doc_func = self._gen_element(e_name, element, element[0])
                     if doc_func:
                         doc_func = doc_func[3:]
-                    f_els = els + (name,)
-                    result += [''] + self._gen_func(module, cls, e_name, f_els,
+                    result += [''] + self._gen_func(module, cls, e_name, gels,
                                                     doc_func)
                 elif element[0] == ElementType.cl:  # классы
                     doc_cls = self._gen_element(e_name, element,
@@ -184,6 +183,7 @@ class RSTGenerator:
         :param doc: описание класса
         :return: list
         """
+        gels = els + (name,)
         if els:  # если это вложенный класс
             # последовательность в заголовок
             hie = ''
@@ -250,8 +250,8 @@ class RSTGenerator:
                 for c in classes:  # рекурсивное документирование подклассов
                     doc_cls = self._gen_element(c[0], c[1], ElementType.cl)[3:]
                     if doc_cls:
-                        result += [''] + self._gen_class(module, c[0],
-                                                         tuple(name), doc_cls)
+                        result += [''] + self._gen_class(module, c[0], gels,
+                                                         doc_cls)
         if not els:
             result.append('')
         return result
@@ -272,6 +272,8 @@ class RSTGenerator:
             result += m_doc + ['', '']
             if module == '__init__':  # сохранение описания пакета
                 self.__init = m_doc
+        else:
+            result.append('')
         for first in self.__prop['first']:  # обработка последовательности
             e_type = None  # определение текущего типа
             if first == 'v':
@@ -308,6 +310,8 @@ class RSTGenerator:
                             doc_func = doc_func[3:]
                             result += self._gen_func(module, None, name,
                                                      doc=doc_func)
+            if first == 'v':
+                result.append('')
         return result
 
     def gen_project(self):

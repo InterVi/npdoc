@@ -356,11 +356,12 @@ class Analyser:
                                                     var_doc, func_doc)
                             parse_dict(module, de, c[0], ind)
                         elif fe == 'c':  # классы
-                            c_classes = self._classes_doc(name, code, ind)
-                            de = self._doc_elements(code, name, True, c[0], (),
-                                                    c_classes, ind, first,
-                                                    var_doc, func_doc)
-                            parse_dict(module, de, c[0], ind)
+                            c_classes = self._classes_doc(name, code, ind,
+                                                          (c[0],), c[0])
+                            de = self._doc_elements(code, name, True, c[0],
+                                                    (c[0],), c_classes, ind,
+                                                    first, var_doc, func_doc)
+                            parse_dict(module, de, c[0], ind, (c[0],), 1)
 
     def analyse_all(self, modules, names):
         """Анализ и полное документирование модулей.

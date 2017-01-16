@@ -160,7 +160,8 @@ class Generator:
             gen_package(path_, self.__prop['out'], True)
             return True
         elif os.path.isfile(path_):  # если это файл (модуль)
-            name = os.path.basename(path_)[:path_.index('.')]
+            name = os.path.basename(path_)
+            name = name[:name.index('.')]
             gen([name], {name: path_}, path_, self.__prop['out'])
             return True
         return False
